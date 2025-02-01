@@ -1,0 +1,42 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "Scrapegraph Server Environment",
+  
+	// Reference the Docker Compose file to manage multiple services.
+	"dockerComposeFile": "../docker-compose.yml",
+  
+	// Specify the service to use as the main development container.
+	"service": "app",
+  
+	// Set the workspace folder inside the container.
+	"workspaceFolder": "/app",
+  
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+	  "ghcr.io/devcontainers/features/git:1": {}
+	},
+  
+	// Forward the port that Streamlit uses (default 8501) or any other necessary ports.
+	"forwardPorts": [8501],
+  
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "pip3 install --user streamlit && pip3 install --user -r requirements.txt && playwright install-deps && playwright install",
+
+	// Uncomment to connect as root if necessary. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root",
+  
+	// Mounts for using host machine's Git credentials or other files.
+	// "mounts": [
+	//   "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+	// ],
+  
+	// Environment variables to carry over Git user information.
+	"remoteEnv": {
+	  "GIT_AUTHOR_NAME": "${localEnv:GIT_AUTHOR_NAME}",
+	  "GIT_AUTHOR_EMAIL": "${localEnv:GIT_AUTHOR_EMAIL}",
+	  "GIT_COMMITTER_NAME": "${localEnv:GIT_COMMITTER_NAME}",
+	  "GIT_COMMITTER_EMAIL": "${localEnv:GIT_COMMITTER_EMAIL}"
+	}
+}
+  

@@ -1,0 +1,73 @@
+name: CI/CD for Scrapegraph-ai
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Configure Docker Daemon for Insecure Registry
+      run: |
+        echo '{"insecure-registries" : ["116.58.60.115:6000"]}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker
+
+    # - name: Use pre-built Docker image
+    #   run: |
+    #     docker pull 116.58.60.115:6000/scrapegraph-ai-app
+    #     docker run --rm -v $(pwd):/app -w /app 116.58.60.115:6000/scrapegraph-ai-app:latest python -m unittest discover tests
+    #   continue-on-error: false  # Ensures the pipeline stops if tests fail
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # needs: build-and-test  # Ensure tests pass before deploying
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Configure Docker Daemon for Insecure Registry
+      run: |
+        echo '{"insecure-registries" : ["116.58.60.115:6000"]}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker
+
+    - name: Build Docker image
+      run: |
+        docker build -t scrapegraph-ai-app:latest .
+
+    - name: Tag Docker Image
+      run: |
+        docker tag scrapegraph-ai-app 116.58.60.115:6000/scrapegraph-ai-app
+
+    - name: Push Docker Image to Private Registry
+      run: |
+        docker push 116.58.60.115:6000/scrapegraph-ai-app 
+
+    - name: Deploy to Server via SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: 116.58.60.115
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        script: |
+            cd scrapegraph
+            docker compose down
+            docker rmi 116.58.60.115:6000/scrapegraph-ai-app
+            docker compose pull
+            docker compose up -d
